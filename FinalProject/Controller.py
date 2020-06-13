@@ -6,6 +6,8 @@ import Viewer
 color_inactive = pygame.Color('lightskyblue3')
 color_active = pygame.Color('dodgerblue2')
 
+
+
 class Player:
     x = 44
     y = 44
@@ -52,9 +54,12 @@ class Maze:
 
 class App:
  
-    windowWidth = 800
+    windowWidth = 1000
     windowHeight = 600
     player = 0
+    textlog = ''
+    offset = 0
+    texthistory = []
  
     def __init__(self):
         self._running = True
@@ -67,6 +72,7 @@ class App:
     def on_init(self):
         pygame.init()
         self.input_box = pygame.Rect(250, 450, 500, 32)
+        self.output_box = pygame.Rect(500, 0, 500, 400)
         self._display_surf = pygame.display.set_mode((self.windowWidth,self.windowHeight), pygame.HWSURFACE)
         
 
@@ -89,10 +95,29 @@ class App:
         self.maze.draw(self._display_surf, self._block_surf, self._flag_surf)
         self.color = color_active
         pygame.draw.rect(self._display_surf, self.color, self.input_box, 2)
+        pygame.draw.rect(self._display_surf, self.color, self.output_box, 2)
+        font = pygame.font.Font(None, 32)
+        count = 1
+        for i in self.texthistory:
+            txt_surface = font.render(i, True, self.color)
+            self._display_surf.blit(txt_surface, (self.output_box.x + 5, 370 + 5 - self.offset+count*20))
+            count += 1
+        
         pygame.display.flip()
- 
+        
+        
     def on_cleanup(self):
         pygame.quit()
+        
+        
+    def chatbox(self, text):
+        print('eh?')
+        self.textlog += text
+        self.texthistory.append(text)
+        self.on_render()
+        self.offset += 20
+        
+        
 
     def chat(self):
         done = False
@@ -109,6 +134,8 @@ class App:
                     if event.key == pygame.K_RETURN:
                         # send info through socket instead of sending to Viewer function
                         Viewer.printChat(text)
+                        boxout = ''.join(text)
+                        self.chatbox('You: '+boxout)
                         text = ''
                         self.color = color_inactive
                         done = True
