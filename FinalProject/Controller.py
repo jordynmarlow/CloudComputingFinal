@@ -3,7 +3,8 @@ import pygame
 import Viewer
 
 # chat window colors
-color_inactive = pygame.Color('lightskyblue3')
+#color_inactive = pygame.Color('lightskyblue3')
+color_inactive = pygame.Color(255, 0, 255, 0)
 color_active = pygame.Color('dodgerblue2')
 
 
@@ -60,6 +61,7 @@ class App:
     textlog = ''
     offset = 0
     texthistory = []
+    color = color_inactive
  
     def __init__(self):
         self._running = True
@@ -93,13 +95,12 @@ class App:
         self._display_surf.fill((0,0,0))
         self._display_surf.blit(self._image_surf,(self.player.x,self.player.y))
         self.maze.draw(self._display_surf, self._block_surf, self._flag_surf)
-        self.color = color_active
         pygame.draw.rect(self._display_surf, self.color, self.input_box, 2)
-        pygame.draw.rect(self._display_surf, self.color, self.output_box, 2)
+        pygame.draw.rect(self._display_surf, pygame.Color('dodgerblue2'), self.output_box, 2)
         font = pygame.font.Font(None, 32)
         count = 1
         for i in self.texthistory:
-            txt_surface = font.render(i, True, self.color)
+            txt_surface = font.render(i, True, pygame.Color('dodgerblue2'))
             self._display_surf.blit(txt_surface, (self.output_box.x + 5, 370 + 5 - self.offset+count*20))
             count += 1
         
@@ -114,8 +115,12 @@ class App:
         print('eh?')
         self.textlog += text
         self.texthistory.append(text)
+        if len(self.texthistory) > 10:
+            self.texthistory = self.texthistory[1:]
         self.on_render()
         self.offset += 20
+        if self.offset > 200:
+            self.offset -= 20
         
         
 
@@ -129,6 +134,7 @@ class App:
         while not done:
             pygame.event.pump()
             for event in pygame.event.get():
+                self.color = color_active
                 #pygame.event.pump()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
