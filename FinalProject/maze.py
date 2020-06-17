@@ -1,5 +1,6 @@
 import pygame
 import random
+from os import path
 
 # Settings
 WIDTH = 800
@@ -10,29 +11,82 @@ ACC = 0.5
 FRICTION = -0.15
 GRAVITY = 0.2
 FONT = 'Arial'
+BACKGROUND_IMAGE = 'background.png'
+GRASS_IMAGE = 'grass.png'
+COIN_ANIM = 'coin.png'
+PLAYER_IDLE_ANIM = 'idle.png'
+PLAYER_RUN_ANIM = 'run.png'
+PLAYER_JUMP_ANIM = 'jump.png'
 
-PLATFORM_LIST = [(0, HEIGHT - 40, WIDTH, 40),
-                 (250, HEIGHT * 3 / 4 - 20, WIDTH / 2, 40)]
+PLATFORM_LIST = [(WIDTH / 2, HEIGHT, WIDTH, 40),
+                 (250, HEIGHT - 150, WIDTH / 2, 40)]
+
+class Spritesheet:
+    def __init__(self, filename):
+        self.spritesheet = pygame.image.load(filename).convert()
+    
+    def get_image(self, x, y, w, h):
+        image = pygame.Surface((w, h))
+        image.blit(self.spritesheet, (0, 0), (x, y, w, h))
+        return image
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, game):
-        self.game = game
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface((30, 40))
-        self.image.fill(pygame.Color('Yellow'))
+        self.game = game
+        self.current_frame = 0
+        self.last_update = 0
+        self.load_images()
+        self.image = self.idle_r
+        self.image.set_colorkey(pygame.Color('White'))
         self.rect = self.image.get_rect()
         self.pos = pygame.math.Vector2(x, y)
-        self.pos.x = x
-        self.pos.y = y
         self.vel = pygame.math.Vector2(0, 0)
         self.acc = pygame.math.Vector2(0, 0)
         self.rect.midbottom = self.pos
         self.on_floor = False
     
+    def load_images(self):
+        self.idle_r = self.game.load_image(PLAYER_IDLE_ANIM).get_image(0, 0, 100, 104)
+        self.idle_r = pygame.transform.scale(self.idle_r, (75, 76))
+        self.idle_l = pygame.transform.flip(self.idle_r, True, False)
+        self.jump_r = self.game.load_image(PLAYER_JUMP_ANIM).get_image(37, 25, 76, 78)
+        self.jump_l = pygame.transform.flip(self.jump_r, True, False)
+        self.fall_r = self.game.load_image(PLAYER_JUMP_ANIM).get_image(152, 25, 67, 78)
+        self.fall_l = pygame.transform.flip(self.fall_r, True, False)
+        self.run_r = [self.game.load_image(PLAYER_RUN_ANIM).get_image(61, 40, 66, 72),
+                    self.game.load_image(PLAYER_RUN_ANIM).get_image(147, 41, 65, 73),
+                    self.game.load_image(PLAYER_RUN_ANIM).get_image(231, 40, 66, 74),
+                    self.game.load_image(PLAYER_RUN_ANIM).get_image(316, 40, 66, 74),
+                    self.game.load_image(PLAYER_RUN_ANIM).get_image(401, 38, 66, 76),
+                    self.game.load_image(PLAYER_RUN_ANIM).get_image(486, 38, 66, 76),
+                    self.game.load_image(PLAYER_RUN_ANIM).get_image(571, 38, 67, 76),
+                    self.game.load_image(PLAYER_RUN_ANIM).get_image(658, 39, 80, 75),
+                    self.game.load_image(PLAYER_RUN_ANIM).get_image(758, 40, 88, 72),
+                    self.game.load_image(PLAYER_RUN_ANIM).get_image(866, 40, 97, 72),
+                    self.game.load_image(PLAYER_RUN_ANIM).get_image(125, 140, 99, 74),
+                    self.game.load_image(PLAYER_RUN_ANIM).get_image(244, 139, 95, 75),
+                    self.game.load_image(PLAYER_RUN_ANIM).get_image(358, 138, 89, 76),
+                    self.game.load_image(PLAYER_RUN_ANIM).get_image(466, 137, 79, 77),
+                    self.game.load_image(PLAYER_RUN_ANIM).get_image(564, 136, 67, 78),
+                    self.game.load_image(PLAYER_RUN_ANIM).get_image(650, 138, 66, 76),
+                    self.game.load_image(PLAYER_RUN_ANIM).get_image(735, 138, 66, 75),
+                    self.game.load_image(PLAYER_RUN_ANIM).get_image(820, 139, 66, 71)]
+        self.run_l = []
+        for i in range(0, len(self.run_r)):
+            self.run_l.append(pygame.transform.flip(self.run_r[i], True, False))
+    
     def jump(self):
         if self.on_floor:
             self.on_floor = False
-            self.vel.y = -7
+            self.vel.y = -9
+    
+    def animate(self, sprite_list):
+        now = pygame.time.get_ticks()
+        if now - self.last_update > 45:
+            self.last_update = now
+            self.current_frame = (self.current_frame + 1) % len(sprite_list)
+            self.image = sprite_list[self.current_frame]
 
     def update(self):
         self.acc = pygame.math.Vector2(0, GRAVITY)
@@ -47,8 +101,32 @@ class Player(pygame.sprite.Sprite):
         if self.pos.x < WIDTH and self.pos.x > 0:
             self.rect.midbottom = self.pos
         else:
-            self.pos.x = self.rect.midbottom.x
-            self.pos.y = self.rect.midbottom.y
+            self.pos = self.rect.midbottom
+        if self.on_floor:
+            if self.vel.x > 1.5:
+                # moving right
+                self.animate(self.run_r)
+            elif self.vel.x < -1.5:
+                # moving left
+                self.animate(self.run_l)
+            else:
+                # idle
+                if self.vel.x > 0:
+                    self.image = self.idle_r
+                elif self.vel.x < 0:
+                    self.image = self.idle_l
+        else:
+            if self.vel.y > 1:
+                if self.vel.x > 0:
+                    self.image = self.fall_r
+                elif self.vel.x < 0:
+                    self.image = self.fall_l
+            elif self.vel.y < -1:
+                if self.vel.x > 0:
+                    self.image = self.jump_r
+                elif self.vel.x < 0:
+                    self.image = self.jump_l
+        self.image.set_colorkey(pygame.Color('White'))
 
 class Platform(pygame.sprite.Sprite):
     def __init__(self, x, y, w, h):
@@ -56,8 +134,7 @@ class Platform(pygame.sprite.Sprite):
         self.image = pygame.Surface((w, h))
         self.image.fill(pygame.Color(0, 255, 0))
         self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
+        self.rect.midbottom = (x, y)
 
 class Flag(pygame.sprite.Sprite):
     def __init__(self, x, y, game):
@@ -78,13 +155,18 @@ class Game:
         self.running = True
         self.font_name = pygame.font.match_font(FONT)
         self.score = 0
+    
+    def load_image(self, spritesheet):
+        self.dir = path.dirname(__file__)
+        image_dir = path.join(self.dir, 'assets')
+        return Spritesheet(path.join(image_dir, spritesheet))
 
     def new(self):
         self.sprites = pygame.sprite.Group()
         self.platforms = pygame.sprite.Group()
         self.flags = pygame.sprite.Group()
         # create Player
-        self.player = Player(WIDTH / 2, HEIGHT / 2, self)
+        self.player = Player(WIDTH / 2, HEIGHT / 4, self)
         self.sprites.add(self.player)
         # create Flag
         self.flag = Flag(100, HEIGHT - 40, self)
