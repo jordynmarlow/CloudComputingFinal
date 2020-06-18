@@ -147,6 +147,10 @@ class App:
         # make text box active
         while not done:
             pygame.event.pump()
+            try:
+                self.chatbox(clientSocket.recv(1024).decode('utf-8'))
+            except BlockingIOError:
+                True 
             for event in pygame.event.get():
                 self.color = color_active
                 #pygame.event.pump()

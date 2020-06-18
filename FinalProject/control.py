@@ -1,12 +1,15 @@
+# Controller Client
+# This client will have full game functionality except the Coin will be invisible
 import pygame
 import random
 from os import path
+import socket
 
 # Settings
 WIDTH = 960
 HEIGHT = 540
 FPS = 60
-TITLE = 'Labyrinth'
+TITLE = 'Labyrinth Controller'
 ACC = 0.5
 FRICTION = -0.15
 GRAVITY = 0.2
@@ -24,6 +27,13 @@ BOTTOM_PLATFORM = (LARGE_PLATFORM, WIDTH / 2, HEIGHT, 3072, 128)
 PLATFORM_LIST = [(MEDIUM_PLATFORM, 350, HEIGHT - 300, 1536, 128),
                 (SMALL_PLATFORM, 750, HEIGHT - 150, 768, 128),
                 BOTTOM_PLATFORM]
+
+clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+host = "54.164.222.47"
+port = 9999
+clientSocket.connect((host, port))
+print("Connection done")
+clientSocket.setblocking(0)
 
 class Spritesheet:
     def __init__(self, filename):
@@ -107,6 +117,8 @@ class Player(pygame.sprite.Sprite):
         else:
             self.pos.x = self.rect.midbottom[0]
             self.pos.y = self.rect.midbottom[1]
+        # format: 'pos.x pos.y vel.x vel.y acc.x acc.y'
+        game.sockconn(str(self.pos.x) + str(self.pos.y) + str(self.vel.x) + str(self.vel.y) + str(self.acc.x) + str(self.acc.y))
         if self.on_floor:
             if self.vel.x > 1.5:
                 # moving right
@@ -176,6 +188,10 @@ class Game:
     
     def load_image(self, spritesheet):
         return Spritesheet(path.join(self.image_dir, spritesheet))
+    
+    def sockconn(self, text):
+        stringencoded = text.encode('utf-8')
+        clientSocket.send(stringencoded)
 
     def new(self):
         self.sprites = pygame.sprite.Group()

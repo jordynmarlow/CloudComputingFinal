@@ -1,12 +1,15 @@
+# Viewer Client
+# This client will have limited game functionality, essentially just seeing Coin and watching Player move
 import pygame
 import random
 from os import path
+import socket
 
 # Settings
 WIDTH = 960
 HEIGHT = 540
 FPS = 60
-TITLE = 'Labyrinth'
+TITLE = 'Labyrinth Viewer'
 ACC = 0.5
 FRICTION = -0.15
 GRAVITY = 0.2
@@ -24,6 +27,13 @@ BOTTOM_PLATFORM = (LARGE_PLATFORM, WIDTH / 2, HEIGHT, 3072, 128)
 PLATFORM_LIST = [(MEDIUM_PLATFORM, 350, HEIGHT - 300, 1536, 128),
                 (SMALL_PLATFORM, 750, HEIGHT - 150, 768, 128),
                 BOTTOM_PLATFORM]
+
+clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+host = "54.164.222.47"
+port = 9999
+clientSocket.connect((host, port))
+print("Connection done")
+clientSocket.setblocking(0)
 
 class Spritesheet:
     def __init__(self, filename):
@@ -95,18 +105,19 @@ class Player(pygame.sprite.Sprite):
     def update(self):
         self.acc = pygame.math.Vector2(0, GRAVITY)
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT]:
-            self.acc.x = -ACC
-        if keys[pygame.K_RIGHT]:
-            self.acc.x = ACC
-        self.acc.x += self.vel.x * FRICTION
-        self.vel += self.acc
-        self.pos += self.vel + (self.acc / 2)
-        if self.pos.x < WIDTH - 37 and self.pos.x > 37: # 37 is half of the player width
-            self.rect.midbottom = self.pos
-        else:
-            self.pos.x = self.rect.midbottom[0]
-            self.pos.y = self.rect.midbottom[1]
+        # NEEDS TO GET ACC, VEL, AND POS FROM CONTROL CLIENT
+        #if keys[pygame.K_LEFT]:
+        #    self.acc.x = -ACC
+        #if keys[pygame.K_RIGHT]:
+        #    self.acc.x = ACC
+        #self.acc.x += self.vel.x * FRICTION
+        #self.vel += self.acc
+        #self.pos += self.vel + (self.acc / 2)
+        #if self.pos.x < WIDTH - 37 and self.pos.x > 37: # 37 is half of the player width
+        #    self.rect.midbottom = self.pos
+        #else:
+        #    self.pos.x = self.rect.midbottom[0]
+        #    self.pos.y = self.rect.midbottom[1]
         if self.on_floor:
             if self.vel.x > 1.5:
                 # moving right
@@ -176,6 +187,10 @@ class Game:
     
     def load_image(self, spritesheet):
         return Spritesheet(path.join(self.image_dir, spritesheet))
+    
+    def sockconn(self, text):
+        stringencoded = text.encode('utf-8')
+        clientSocket.send(stringencoded)
 
     def new(self):
         self.sprites = pygame.sprite.Group()
@@ -186,7 +201,7 @@ class Game:
         self.sprites.add(self.player)
         # create Coin
         self.coin = Coin(100, HEIGHT - 50, self)
-        #self.sprites.add(self.coin) # this will blit the coin
+        self.sprites.add(self.coin) # this will blit the coin
         self.coins.add(self.coin)
         # create Platforms
         for platform in PLATFORM_LIST:
@@ -199,6 +214,22 @@ class Game:
         self.playing = True
         while self.playing:
             self.clock.tick(FPS)
+            try:
+                input = clientSocket.recv(1024).decode('utf-8')
+                print(input)
+                if input[0:4] == "CHAT":
+                    self.chatbox(input[4:])
+                elif input[0:6] == 'PLAYER':
+                    # format: 'pos.x pos.y vel.x vel.y acc.x acc.y'
+                    string = input.split()
+                    self.player.pos.x = int(string[0])
+                    self.player.pos.y = int(string[1])
+                    self.player.vel.x = int(string[2])
+                    self.player.vel.y = int(string[3])
+                    self.player.acc.x = int(string[4])
+                    self.player.acc.y = int(string[5])
+            except BlockingIOError:
+                pass
             self.events()
             self.update()
             if self.playing:
@@ -282,6 +313,20 @@ class Game:
         text_rect = text_surface.get_rect()
         text_rect.midtop = (x, y)
         self.screen.blit(text_surface, text_rect)
+
+"""def input(string):
+    if string[0:4] == 'CHAT':
+        # print to chat
+        pass
+    elif string[0:6] == 'PLAYER':
+        # format: 'pos.x pos.y vel.x vel.y acc.x acc.y'
+        string = string.split()
+        game.player.pos.x = int(string[0])
+        game.player.pos.y = int(string[1])
+        game.player.vel.x = int(string[2])
+        game.player.vel.y = int(string[3])
+        game.player.acc.x = int(string[4])
+        game.player.acc.y = int(string[5])"""
 
 game = Game()
 game.splash()
