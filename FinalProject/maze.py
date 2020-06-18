@@ -3,8 +3,8 @@ import random
 from os import path
 
 # Settings
-WIDTH = 800
-HEIGHT = 500
+WIDTH = 960
+HEIGHT = 540
 FPS = 60
 TITLE = 'Labyrinth'
 ACC = 0.5
@@ -12,14 +12,20 @@ FRICTION = -0.15
 GRAVITY = 0.2
 FONT = 'Arial'
 BACKGROUND_IMAGE = 'background.png'
-GRASS_IMAGE = 'grass.png'
+SMALL_PLATFORM = 'small_platform.png'
+MEDIUM_PLATFORM = 'medium_platform.png'
+LARGE_PLATFORM = 'large_platform.png'
 COIN_ANIM = 'coin.png'
 PLAYER_IDLE_ANIM = 'idle.png'
 PLAYER_RUN_ANIM = 'run.png'
 PLAYER_JUMP_ANIM = 'jump.png'
 
-PLATFORM_LIST = [(WIDTH / 2, HEIGHT, WIDTH, 40),
-                 (250, HEIGHT - 150, WIDTH / 2, 40)]
+#PLATFORM_LIST = [(WIDTH / 2, HEIGHT, WIDTH, 40),
+#                 (250, HEIGHT - 150, WIDTH / 2, 40)]
+BOTTOM_PLATFORM = (LARGE_PLATFORM, WIDTH / 2, HEIGHT, 3072, 128)
+PLATFORM_LIST = [(MEDIUM_PLATFORM, 350, HEIGHT - 300, 1536, 128),
+                (SMALL_PLATFORM, 750, HEIGHT - 150, 768, 128),
+                BOTTOM_PLATFORM]
 
 class Spritesheet:
     def __init__(self, filename):
@@ -98,10 +104,11 @@ class Player(pygame.sprite.Sprite):
         self.acc.x += self.vel.x * FRICTION
         self.vel += self.acc
         self.pos += self.vel + (self.acc / 2)
-        if self.pos.x < WIDTH and self.pos.x > 0:
+        if self.pos.x < WIDTH - 37 and self.pos.x > 37: # 37 is half of the player width
             self.rect.midbottom = self.pos
         else:
-            self.pos = self.rect.midbottom
+            self.pos.x = self.rect.midbottom[0]
+            self.pos.y = self.rect.midbottom[1]
         if self.on_floor:
             if self.vel.x > 1.5:
                 # moving right
@@ -129,19 +136,29 @@ class Player(pygame.sprite.Sprite):
         self.image.set_colorkey(pygame.Color('White'))
 
 class Platform(pygame.sprite.Sprite):
-    def __init__(self, x, y, w, h):
+    def __init__(self, filename, x, y, w, h, game):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface((w, h))
-        self.image.fill(pygame.Color(0, 255, 0))
+        self.game = game
+        self.load_images(filename, w, h)
+        self.image = self.platform
+        #self.image = pygame.Surface((w, h))
+        #self.image.fill(pygame.Color(0, 255, 0))
         self.rect = self.image.get_rect()
         self.rect.midbottom = (x, y)
+    
+    def load_images(self, filename, w, h):
+        self.platform = self.game.load_image(filename).get_image(0, 0, w, h)
+        self.platform = pygame.transform.scale(self.platform, (w // 3, h // 3))
 
-class Flag(pygame.sprite.Sprite):
+class Coin(pygame.sprite.Sprite):
     def __init__(self, x, y, game):
         pygame.sprite.Sprite.__init__(self)
         self.game = game
-        self.image = pygame.Surface((30, 40))
-        self.image.fill(pygame.Color('Red'))
+        self.current_frame = 0
+        self.last_update = 0
+        self.image = self.game.load_image(COIN_ANIM).get_image(32, 32, 64, 64)
+        self.image = pygame.transform.scale(self.image, (32, 32))
+        self.image.set_colorkey(pygame.Color('Black'))
         self.rect = self.image.get_rect()
         self.rect.midbottom = (x, y)
 
@@ -149,7 +166,11 @@ class Game:
     def __init__(self):
         pygame.init()
         pygame.mixer.init()
+        self.dir = path.dirname(__file__)
+        self.image_dir = path.join(self.dir, 'assets')
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
+        self.background = pygame.image.load(path.join(self.image_dir, BACKGROUND_IMAGE)).convert()
+        self.background = pygame.transform.scale(self.background, (WIDTH, HEIGHT))
         pygame.display.set_caption(TITLE)
         self.clock = pygame.time.Clock()
         self.running = True
@@ -157,24 +178,22 @@ class Game:
         self.score = 0
     
     def load_image(self, spritesheet):
-        self.dir = path.dirname(__file__)
-        image_dir = path.join(self.dir, 'assets')
-        return Spritesheet(path.join(image_dir, spritesheet))
+        return Spritesheet(path.join(self.image_dir, spritesheet))
 
     def new(self):
         self.sprites = pygame.sprite.Group()
         self.platforms = pygame.sprite.Group()
-        self.flags = pygame.sprite.Group()
+        self.coins = pygame.sprite.Group()
         # create Player
         self.player = Player(WIDTH / 2, HEIGHT / 4, self)
         self.sprites.add(self.player)
-        # create Flag
-        self.flag = Flag(100, HEIGHT - 40, self)
-        self.sprites.add(self.flag)
-        self.flags.add(self.flag)
+        # create Coin
+        self.coin = Coin(100, HEIGHT - 50, self)
+        self.sprites.add(self.coin)
+        self.coins.add(self.coin)
         # create Platforms
         for platform in PLATFORM_LIST:
-            p = Platform(*platform)
+            p = Platform(*platform, self)
             self.sprites.add(p)
             self.platforms.add(p)
         self.run()
@@ -200,11 +219,12 @@ class Game:
             hits = pygame.sprite.spritecollide(self.player, self.platforms, False)
             if hits:
                 self.player.vel.y = 0
-        if pygame.sprite.spritecollide(self.player, self.flags, False):
+        if pygame.sprite.spritecollide(self.player, self.coins, True):
             self.score += 1
             self.playing = False
         if self.score == 5:
             self.running = False
+            self.over()
 
     def events(self):
         for event in pygame.event.get():
@@ -218,12 +238,13 @@ class Game:
                     self.player.jump()
 
     def draw(self):
-        self.screen.fill(pygame.Color('Black'))
+        self.screen.blit(self.background, (0, 0))
         self.sprites.draw(self.screen)
         self.draw_text(str(self.score), 20, pygame.Color(255, 255, 255), WIDTH / 2, 5)
         pygame.display.flip()
 
     def splash(self):
+        self.screen.blit(self.background, (0, 0))
         self.draw_text("Labyrinth", 48, pygame.Color(255, 255, 255), WIDTH / 2, HEIGHT / 2)
         self.draw_text("Press any key to play", 20, pygame.Color(255, 255, 255), WIDTH / 2, HEIGHT * 3 / 4)
         pygame.display.flip()
@@ -238,9 +259,8 @@ class Game:
                     waiting = False
 
     def over(self):
-        if not self.running:
-            return
-        self.draw_text("Game Over. You Won.", 48, pygame.Color(255, 255, 255), WIDTH / 2, HEIGHT / 2)
+        self.screen.blit(self.background, (0, 0))
+        self.draw_text("You Won", 48, pygame.Color(255, 255, 255), WIDTH / 2, HEIGHT / 2)
         pygame.display.flip()
         waiting = True
         while waiting:
@@ -261,5 +281,4 @@ game = Game()
 game.splash() # show splash screen
 while game.running:
     game.new()
-game.over()
 pygame.quit()
