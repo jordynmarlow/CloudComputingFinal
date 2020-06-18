@@ -28,6 +28,10 @@ PLATFORM_LIST = [(MEDIUM_PLATFORM, 350, HEIGHT - 300, 1536, 128),
                 (SMALL_PLATFORM, 750, HEIGHT - 150, 768, 128),
                 BOTTOM_PLATFORM]
 
+color_inactive = pygame.Color(255, 0, 255, 0)
+color_active = pygame.Color('dodgerblue2')
+
+
 clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 host = "54.175.72.181"
 port = 9999
@@ -171,6 +175,12 @@ class Coin(pygame.sprite.Sprite):
         self.rect.midbottom = (x, y)
 
 class Game:
+    
+    textlog = ''
+    offset = 0
+    texthistory = []
+    color = color_inactive
+    
     def __init__(self):
         pygame.init()
         pygame.mixer.init()
@@ -185,6 +195,8 @@ class Game:
         self.running = True
         self.font_name = pygame.font.match_font(FONT)
         self.score = 0
+        self.input_box = pygame.Rect(250, 450, 500, 32)
+        self.output_box = pygame.Rect(500, 0, 500, 400)
     
     def load_image(self, spritesheet):
         return Spritesheet(path.join(self.image_dir, spritesheet))
@@ -240,6 +252,69 @@ class Game:
             self.update()
             if self.playing:
                 self.draw()
+                
+    
+    
+    def chatbox(self, text):
+        self.textlog += text
+        self.texthistory.append(text)
+        if len(self.texthistory) > 10:
+            self.texthistory = self.texthistory[1:]
+        self.draw()
+        self.offset += 20
+        if self.offset > 200:
+            self.offset -= 20
+        
+        
+    def chat(self):
+        done = False
+        font = pygame.font.Font(None, 32)
+        clock = pygame.time.Clock()
+        text = ''
+        print('debug')
+        # make text box active
+        while not done:
+            pygame.event.pump()
+            try:
+                input = clientSocket.recv(1024).decode('utf-8')
+                if "CHAT" in input:
+                    procchat1 = input.split("CHAT")
+                    procchat2 = procchat1[1].split("PLAYER")
+                    self.chatbox(procchat2[0])
+            except BlockingIOError:
+                pass 
+            for event in pygame.event.get():
+                self.color = color_active
+                #pygame.event.pump()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        # send info through socket instead of sending to Viewer function
+                        boxout = ''.join(text)
+                        if len(text) > 0:
+                            self.sockconn("CHAT" + boxout)
+                        text = ''
+                        self.color = color_inactive
+                        done = True
+                        break
+                    elif event.key == pygame.K_BACKSPACE:
+                        text = text[:-1]
+                    else:
+                        text += event.unicode
+                else:
+                    done = False
+            self.draw()
+            # Render the current text.
+            txt_surface = font.render(text, True, self.color)
+            # Resize the box if the text is too long.
+            #width = max(200, txt_surface.get_width()+10)
+            #self.input_box.w = width
+            # Blit the text.
+            self.screen.blit(txt_surface, (self.input_box.x + 5, self.input_box.y + 5))
+            # Blit the input_box rect.
+            pygame.display.flip()
+            clock.tick(30)
+    
+    
 
     def update(self):
         self.sprites.update()
@@ -272,6 +347,9 @@ class Game:
                 if self.playing:
                     self.playing = False
                 self.running = False
+            keys = pygame.key.get_pressed()
+            if (keys[pygame.K_BACKSPACE]):
+                self.chat()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     self.player.jump()
@@ -284,6 +362,14 @@ class Game:
         self.screen.blit(self.background, (0, 0))
         self.sprites.draw(self.screen)
         self.draw_text(str(self.score), 20, pygame.Color(255, 255, 255), WIDTH / 2, 5)
+        pygame.draw.rect(self.screen, self.color, self.input_box, 2)
+        pygame.draw.rect(self.screen, pygame.Color('dodgerblue2'), self.output_box, 2)
+        font = pygame.font.Font(None, 32)
+        count = 1
+        for i in self.texthistory:
+            txt_surface = font.render(i, True, pygame.Color('dodgerblue2'))
+            self.screen.blit(txt_surface, (self.output_box.x + 5, 370 + 5 - self.offset+count*20))
+            count += 1
         pygame.display.flip()
 
     def splash(self):
