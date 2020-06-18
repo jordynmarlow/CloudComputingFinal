@@ -123,7 +123,7 @@ class Player(pygame.sprite.Sprite):
         else:
             self.pos.x = self.rect.midbottom[0]
             self.pos.y = self.rect.midbottom[1]
-        # format: 'pos.x pos.y vel.x vel.y acc.x acc.y'
+        # format: 'pos.x pos.y vel.x vel.y acc.x acc.y on_floor found_coin score attempts'
         game.sockconn("PLAYER" +
                     str(self.pos.x) + ' ' + 
                     str(self.pos.y) + ' ' + 
@@ -357,6 +357,7 @@ class Game:
                     if self.found_coin:
                         self.score += 1
                         self.playing = False
+                        self.found_coin = False
                     else:
                         self.attempt -= 1
 

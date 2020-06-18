@@ -359,6 +359,7 @@ class Game:
                     if self.found_coin:
                         self.score += 1
                         self.playing = False
+                        self.found_coin = False
                     else:
                         self.attempt -= 1
 
