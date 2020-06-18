@@ -25,10 +25,20 @@ BOTTOM_PLATFORM = (LARGE_PLATFORM, WIDTH / 2, HEIGHT, 3072, 128)
 PLATFORM_LIST = [[(MEDIUM_PLATFORM, 350, HEIGHT - 300, 1536, 128),
                 (SMALL_PLATFORM, 750, HEIGHT - 150, 768, 128),
                 BOTTOM_PLATFORM],
-        [BOTTOM_PLATFORM],
-        [BOTTOM_PLATFORM],
-        [BOTTOM_PLATFORM],
-        [BOTTOM_PLATFORM]]
+
+                [BOTTOM_PLATFORM],
+
+                [BOTTOM_PLATFORM],
+
+                [BOTTOM_PLATFORM],
+
+                [BOTTOM_PLATFORM]]
+
+COIN_POS_LIST = [(100, HEIGHT - 50),
+                (100, HEIGHT - 50),
+                (100, HEIGHT - 50),
+                (100, HEIGHT - 50),
+                (100, HEIGHT - 50)]
 
 class Spritesheet:
     def __init__(self, filename):
@@ -190,8 +200,8 @@ class Game:
         self.player = Player(WIDTH / 2, HEIGHT / 4, self)
         self.sprites.add(self.player)
         # create Coin
-        self.coin = Coin(100, HEIGHT - 50, self)
-        #self.sprites.add(self.coin) # this will blit the coin
+        self.coin = Coin(COIN_POS_LIST[self.score][0], COIN_POS_LIST[self.score][1], self)
+        self.sprites.add(self.coin) # this will blit the coin
         self.coins.add(self.coin)
         # create Platforms
         for platform in PLATFORM_LIST[self.score]:
