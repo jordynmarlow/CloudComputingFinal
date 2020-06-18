@@ -410,17 +410,16 @@ class Game:
             keys = pygame.key.get_pressed()
             if (keys[pygame.K_BACKSPACE]):
                 self.chat()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    self.player.jump()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN:
-                    if self.found_coin:
-                        self.score += 1
-                        self.playing = False
-                        self.found_coin = False
-                    else:
-                        self.attempt -= 1
+            #if event.type == pygame.KEYDOWN:
+            #    if event.key == pygame.K_SPACE:
+            #        self.player.jump()
+            #if event.type == pygame.KEYDOWN:
+            #    if event.key == pygame.K_RETURN:
+            #        if self.found_coin:
+            #           self.playing = False
+            #            self.found_coin = False
+            #        else:
+            #            self.attempt -= 1
 
     def draw(self):
         self.screen.blit(self.background, (0, 0))
