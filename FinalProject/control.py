@@ -194,6 +194,7 @@ class Game:
         pygame.init()
         pygame.mixer.init()
         self.attempt = 3
+        self.found_coin = False
         self.dir = path.dirname(__file__)
         self.image_dir = path.join(self.dir, 'assets')
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -326,8 +327,7 @@ class Game:
             if hits:
                 self.player.vel.y = 0
         if pygame.sprite.spritecollide(self.player, self.coins, True):
-            self.score += 1
-            self.playing = False
+            self.found_coin = True
         if self.score == 5:
             self.playing = False
             self.running = False
@@ -351,8 +351,11 @@ class Game:
                     self.player.jump()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
-                    print("attempt")
-                    self.attempt -= 1
+                    if self.found_coin:
+                        self.score += 1
+                        self.playing = False
+                    else:
+                        self.attempt -= 1
 
     def draw(self):
         self.screen.blit(self.background, (0, 0))
