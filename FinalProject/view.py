@@ -233,7 +233,7 @@ class Game:
         self.running = True
         self.font_name = pygame.font.match_font(FONT)
         self.score = 0
-        self.input_box = pygame.Rect(250, 450, 500, 32)
+        self.input_box = pygame.Rect(250, 500, 500, 32)
     
     def load_image(self, spritesheet):
         return Spritesheet(path.join(self.image_dir, spritesheet))
@@ -258,6 +258,7 @@ class Game:
             p = Platform(*platform, self)
             self.sprites.add(p)
             self.platforms.add(p)
+        print(self.score)
         self.run()
 
     def run(self):
@@ -274,7 +275,7 @@ class Game:
                     # format: 'pos.x pos.y vel.x vel.y acc.x acc.y on_floor found_coin score attempts'
                     messages = input.split('PLAYER')
                     string = messages[1].split()
-                    print(string)
+                    old_score = self.score
                     if len(string) == 10:
                         self.player.pos.x = float(string[0])
                         self.player.pos.y = float(string[1])
@@ -286,6 +287,8 @@ class Game:
                         self.found_coin = bool(string[7])
                         self.score = int(string[8])
                         self.attempt = int(string[9])
+                    if old_score < self.score:
+                        self.playing = False
             except BlockingIOError:
                 pass
             self.events()
@@ -321,6 +324,24 @@ class Game:
                     procchat1 = input.split("CHAT")
                     procchat2 = procchat1[1].split("PLAYER")
                     self.chatbox(procchat2[0])
+                elif "PLAYER" in input:
+                    # format: 'pos.x pos.y vel.x vel.y acc.x acc.y on_floor found_coin score attempts'
+                    messages = input.split('PLAYER')
+                    string = messages[1].split()
+                    old_score = self.score
+                    if len(string) == 10:
+                        self.player.pos.x = float(string[0])
+                        self.player.pos.y = float(string[1])
+                        self.player.vel.x = float(string[2])
+                        self.player.vel.y = float(string[3])
+                        self.player.acc.x = float(string[4])
+                        self.player.acc.y = float(string[5])
+                        self.player.on_floor = bool(string[6])
+                        self.found_coin = bool(string[7])
+                        self.score = int(string[8])
+                        self.attempt = int(string[9])
+                    if old_score < self.score:
+                        self.playing = False
             except BlockingIOError:
                 pass 
             for event in pygame.event.get():
