@@ -29,8 +29,9 @@ PLATFORM_LIST = [(MEDIUM_PLATFORM, 350, HEIGHT - 300, 1536, 128),
                 BOTTOM_PLATFORM]
 
 
-color_inactive = pygame.Color(255, 0, 255, 0)
-color_active = pygame.Color('dodgerblue2')
+color_inactive = pygame.Color(200, 200, 200, 0)
+#color_active = pygame.Color('dodgerblue2')
+color_active = pygame.Color('white')
 
 
 clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -205,8 +206,7 @@ class Game:
         self.running = True
         self.font_name = pygame.font.match_font(FONT)
         self.score = 0
-        self.input_box = pygame.Rect(250, 450, 500, 32)
-        self.output_box = pygame.Rect(500, 0, 500, 400)
+        self.input_box = pygame.Rect(250, 500, 500, 32)
     
     def load_image(self, spritesheet):
         return Spritesheet(path.join(self.image_dir, spritesheet))
@@ -362,12 +362,11 @@ class Game:
         self.sprites.draw(self.screen)
         self.draw_text(str(self.score), 20, pygame.Color(255, 255, 255), WIDTH / 2, 5)
         pygame.draw.rect(self.screen, self.color, self.input_box, 2)
-        pygame.draw.rect(self.screen, pygame.Color('dodgerblue2'), self.output_box, 2)
         font = pygame.font.Font(None, 32)
         count = 1
         for i in self.texthistory:
-            txt_surface = font.render(i, True, pygame.Color('dodgerblue2'))
-            self.screen.blit(txt_surface, (self.output_box.x + 5, 370 + 5 - self.offset+count*20))
+            txt_surface = font.render(i, True, pygame.Color('white'))
+            self.screen.blit(txt_surface, (5, 495 - self.offset+count*20))
             count += 1
         
         pygame.display.flip()
