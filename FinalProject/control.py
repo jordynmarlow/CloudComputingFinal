@@ -118,7 +118,12 @@ class Player(pygame.sprite.Sprite):
             self.pos.x = self.rect.midbottom[0]
             self.pos.y = self.rect.midbottom[1]
         # format: 'pos.x pos.y vel.x vel.y acc.x acc.y'
-        game.sockconn(str(self.pos.x) + str(self.pos.y) + str(self.vel.x) + str(self.vel.y) + str(self.acc.x) + str(self.acc.y))
+        game.sockconn(str(self.pos.x) + ' ' + 
+                    str(self.pos.y) + ' ' + 
+                    str(self.vel.x) + ' ' + 
+                    str(self.vel.y) + ' ' + 
+                    str(self.acc.x) + ' ' + 
+                    str(self.acc.y))
         if self.on_floor:
             if self.vel.x > 1.5:
                 # moving right
