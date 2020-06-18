@@ -247,7 +247,7 @@ class Game:
                         self.player.on_floor = bool(string[6])
                         self.found_coin = bool(string[7])
                         self.score = int(string[8])
-                        self.attempts = int(string[9])
+                        self.attempt = int(string[9])
             except BlockingIOError:
                 pass
             self.events()
@@ -336,26 +336,13 @@ class Game:
         if self.score == 5:
             self.playing = False
             self.running = False
+            self.over('Won')
         if self.attempt == 0:
             self.playing = False
             self.running = False
-        game.sockconn("PLAYER" +
-            str(self.player.pos.x) + ' ' + 
-            str(self.player.pos.y) + ' ' + 
-            str(self.player.vel.x) + ' ' + 
-            str(self.player.vel.y) + ' ' + 
-            str(self.player.acc.x) + ' ' + 
-            str(self.player.acc.y) + ' ' +
-            str(self.player.on_floor) + ' ' + 
-            str(self.found_coin) + ' ' + 
-            str(self.score) + ' ' + 
-            str(self.attempt))
+            self.over('Lost')
 
     def events(self):
-        if self.score == 5:
-            self.over('Won')
-        if self.attempt == 0:
-            self.over('Lost')
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 if self.playing:

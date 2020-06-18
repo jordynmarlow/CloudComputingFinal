@@ -320,12 +320,6 @@ class Game:
                 self.player.vel.y = 0
         if pygame.sprite.spritecollide(self.player, self.coins, True):
             self.found_coin = True
-        if self.score == 5:
-            self.playing = False
-            self.running = False
-        if self.attempt == 0:
-            self.playing = False
-            self.running = False
         game.sockconn("PLAYER" +
             str(self.player.pos.x) + ' ' + 
             str(self.player.pos.y) + ' ' + 
@@ -337,12 +331,16 @@ class Game:
             str(self.found_coin) + ' ' + 
             str(self.score) + ' ' + 
             str(self.attempt))
-
-    def events(self):
         if self.score == 5:
+            self.playing = False
+            self.running = False
             self.over('Won')
         if self.attempt == 0:
+            self.playing = False
+            self.running = False
             self.over('Lost')
+
+    def events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 if self.playing:
