@@ -15,7 +15,7 @@ host = "54.164.222.47"
 port = 9999
 clientSocket.connect((host, port))
 print("Connection done")
-
+clientSocket.setblocking(0)
 
 
 class Player:
@@ -134,7 +134,8 @@ class App:
     def sockconn(self, text):
         stringencoded = text.encode('utf-8')
         clientSocket.send(stringencoded)
-        self.chatbox("Them:" + clientSocket.recv(1024).decode('utf-8'))
+        
+            
         
 
     def chat(self):
@@ -152,10 +153,10 @@ class App:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
                         # send info through socket instead of sending to Viewer function
-                        Viewer.printChat(text)
                         boxout = ''.join(text)
-                        self.chatbox('You: '+boxout)
-                        self.sockconn(boxout)
+                        if len(text) > 0:
+                            self.sockconn(boxout)
+                        Viewer.printChat(text)
                         text = ''
                         self.color = color_inactive
                         done = True
@@ -187,7 +188,13 @@ class App:
             keys = pygame.key.get_pressed()
             if (keys[K_BACKSPACE]):
                 self.chat()
-
+                
+            try:
+                self.chatbox(clientSocket.recv(1024).decode('utf-8'))
+            except BlockingIOError:
+                True 
+            
+                
             if (keys[K_RIGHT]):
                 self.player.moveRight()
             if (keys[K_LEFT]):
