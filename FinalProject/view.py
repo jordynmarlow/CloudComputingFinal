@@ -103,7 +103,7 @@ class Player(pygame.sprite.Sprite):
             self.image = sprite_list[self.current_frame]
 
     def update(self):
-        self.acc = pygame.math.Vector2(0, GRAVITY)
+        #self.acc = pygame.math.Vector2(0, GRAVITY)
         keys = pygame.key.get_pressed()
         # NEEDS TO GET ACC, VEL, AND POS FROM CONTROL CLIENT
         #if keys[pygame.K_LEFT]:
@@ -118,6 +118,7 @@ class Player(pygame.sprite.Sprite):
         #else:
         #    self.pos.x = self.rect.midbottom[0]
         #    self.pos.y = self.rect.midbottom[1]
+        self.rect.midbottom = self.pos
         if self.on_floor:
             if self.vel.x > 1.5:
                 # moving right
@@ -217,22 +218,22 @@ class Game:
             try:
                 input = clientSocket.recv(1024).decode('utf-8')
                 if "CHAT" in input:
-                    procchat1 = input.split("CHAT")
-                    procchat2 = procchat1[1].split("PLAYER")
-                    self.chatbox(procchat2[0])
-                elif input[0:6] == 'PLAYER':
+                    input = input.split("CHAT")
+                    input = input[1].split("PLAYER")
+                    self.chatbox(input[0])
+                elif "PLAYER" in input:
                     # format: 'pos.x pos.y vel.x vel.y acc.x acc.y'
                     messages = input.split('PLAYER')
-                    string = messages[-2].split()
-                    #print(string)
-                    #print()
-                    self.player.pos.x = float(string[0])
-                    self.player.pos.y = float(string[1])
-                    self.player.vel.x = float(string[2])
-                    self.player.vel.y = float(string[3])
-                    self.player.acc.x = float(string[4])
-                    self.player.acc.y = float(string[5])
-                    self.player.on_floor = bool(string[6])
+                    string = messages[1].split()
+                    print(string)
+                    if len(string) == 7:
+                        self.player.pos.x = float(string[0])
+                        self.player.pos.y = float(string[1])
+                        self.player.vel.x = float(string[2])
+                        self.player.vel.y = float(string[3])
+                        self.player.acc.x = float(string[4])
+                        self.player.acc.y = float(string[5])
+                        self.player.on_floor = bool(string[6])
             except BlockingIOError:
                 pass
             self.events()
