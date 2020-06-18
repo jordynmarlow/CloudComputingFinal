@@ -21,9 +21,14 @@ PLAYER_RUN_ANIM = 'run.png'
 PLAYER_JUMP_ANIM = 'jump.png'
 
 BOTTOM_PLATFORM = (LARGE_PLATFORM, WIDTH / 2, HEIGHT, 3072, 128)
-PLATFORM_LIST = [(MEDIUM_PLATFORM, 350, HEIGHT - 300, 1536, 128),
+
+MAZE_1 = [[(MEDIUM_PLATFORM, 350, HEIGHT - 300, 1536, 128),
                 (SMALL_PLATFORM, 750, HEIGHT - 150, 768, 128),
-                BOTTOM_PLATFORM]
+                BOTTOM_PLATFORM],
+        [BOTTOM_PLATFORM],
+        [BOTTOM_PLATFORM],
+        [BOTTOM_PLATFORM],
+        [BOTTOM_PLATFORM]]
 
 class Spritesheet:
     def __init__(self, filename):
