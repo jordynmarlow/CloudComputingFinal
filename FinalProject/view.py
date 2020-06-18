@@ -233,11 +233,11 @@ class Game:
                     input = input[1].split("PLAYER")
                     self.chatbox(input[0])
                 elif "PLAYER" in input:
-                    # format: 'pos.x pos.y vel.x vel.y acc.x acc.y'
+                    # format: 'pos.x pos.y vel.x vel.y acc.x acc.y on_floor found_coin score attempts'
                     messages = input.split('PLAYER')
                     string = messages[1].split()
                     print(string)
-                    if len(string) == 7:
+                    if len(string) == 10:
                         self.player.pos.x = float(string[0])
                         self.player.pos.y = float(string[1])
                         self.player.vel.x = float(string[2])
@@ -245,6 +245,9 @@ class Game:
                         self.player.acc.x = float(string[4])
                         self.player.acc.y = float(string[5])
                         self.player.on_floor = bool(string[6])
+                        self.found_coin = bool(string[7])
+                        self.score = bool(string[8])
+                        self.attempts = bool(string[9])
             except BlockingIOError:
                 pass
             self.events()
@@ -329,8 +332,7 @@ class Game:
             if hits:
                 self.player.vel.y = 0
         if pygame.sprite.spritecollide(self.player, self.coins, True):
-            self.score += 1
-            self.playing = False
+            self.found_coin = True
         if self.score == 5:
             self.playing = False
             self.running = False
@@ -354,8 +356,11 @@ class Game:
                     self.player.jump()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
-                    print("attempt")
-                    self.attempt -= 1
+                    if self.found_coin:
+                        self.score += 1
+                        self.playing = False
+                    else:
+                        self.attempt -= 1
 
     def draw(self):
         self.screen.blit(self.background, (0, 0))

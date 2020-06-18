@@ -131,7 +131,10 @@ class Player(pygame.sprite.Sprite):
                     str(self.vel.y) + ' ' + 
                     str(self.acc.x) + ' ' + 
                     str(self.acc.y) + ' ' +
-                    str(self.on_floor))
+                    str(self.on_floor) + ' ' + 
+                    str(game.found_coin) + ' ' + 
+                    str(game.score) + ' ' + 
+                    str(game.attempt))
         if self.on_floor:
             if self.vel.x > 1.5:
                 # moving right
