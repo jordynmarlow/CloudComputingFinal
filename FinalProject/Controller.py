@@ -159,7 +159,7 @@ class App:
                         # send info through socket instead of sending to Viewer function
                         boxout = ''.join(text)
                         if len(text) > 0:
-                            self.sockconn(boxout)
+                            self.sockconn("CHAT" + boxout)
                         Viewer.printChat(text)
                         text = ''
                         self.color = color_inactive
@@ -194,9 +194,14 @@ class App:
                 self.chat()
                 
             try:
-                self.chatbox(clientSocket.recv(1024).decode('utf-8'))
+                input = clientSocket.recv(1024).decode('utf-8')
+                if input[0:4] == "CHAT":
+                    self.chatbox(input[4:])
+                else:
+                    pass
+                    #player.positionchange(input)
             except BlockingIOError:
-                True 
+                pass 
             
                 
             if (keys[K_RIGHT]):

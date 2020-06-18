@@ -11,7 +11,7 @@ class Server:
         MAX_SIZE = 1024
 
         serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
+        
         host = socket.gethostname()
 
         port = 9999
@@ -27,12 +27,12 @@ class Server:
            cThread.start()
            self.connections.append(c)
            print("Got a connection from %s" % str(a))
-           f=c.recv(1024).decode('utf-8')
+           f=c.recv(4096).decode('utf-8')
            c.send(f.encode('utf-8'))
         
     def handler(self, c, a):
         while True:
-            data = c.recv(1024)
+            data = c.recv(4096)
             for connection in self.connections:
                 connection.send(data)
                 if not data:
