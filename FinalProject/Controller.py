@@ -11,7 +11,7 @@ color_active = pygame.Color('dodgerblue2')
 
 
 clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-host = "54.164.222.47"
+host = "54.175.72.181"
 port = 9999
 clientSocket.connect((host, port))
 print("Connection done")

@@ -34,7 +34,7 @@ color_active = pygame.Color('dodgerblue2')
 
 
 clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-host = "54.164.222.47"
+host = "54.175.72.181"
 port = 9999
 clientSocket.connect((host, port))
 print("Connection done")
@@ -236,6 +236,14 @@ class Game:
         self.playing = True
         while self.playing:
             self.clock.tick(FPS)
+            try:
+                input = clientSocket.recv(1024).decode('utf-8')
+                if "CHAT" in input:
+                    procchat1 = input.split("CHAT")
+                    procchat2 = procchat1[1].split("PLAYER")
+                    self.chatbox(procchat2[0])
+            except BlockingIOError:
+                pass
             self.events()
             self.update()
             if self.playing:
@@ -264,9 +272,13 @@ class Game:
         while not done:
             pygame.event.pump()
             try:
-                self.chatbox(clientSocket.recv(1024).decode('utf-8'))
+                input = clientSocket.recv(1024).decode('utf-8')
+                if "CHAT" in input:
+                    procchat1 = input.split("CHAT")
+                    procchat2 = procchat1[1].split("PLAYER")
+                    self.chatbox(procchat2[0])
             except BlockingIOError:
-                True 
+                pass 
             for event in pygame.event.get():
                 self.color = color_active
                 #pygame.event.pump()
