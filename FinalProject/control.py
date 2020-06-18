@@ -124,17 +124,6 @@ class Player(pygame.sprite.Sprite):
             self.pos.x = self.rect.midbottom[0]
             self.pos.y = self.rect.midbottom[1]
         # format: 'pos.x pos.y vel.x vel.y acc.x acc.y on_floor found_coin score attempts'
-        game.sockconn("PLAYER" +
-                    str(self.pos.x) + ' ' + 
-                    str(self.pos.y) + ' ' + 
-                    str(self.vel.x) + ' ' + 
-                    str(self.vel.y) + ' ' + 
-                    str(self.acc.x) + ' ' + 
-                    str(self.acc.y) + ' ' +
-                    str(self.on_floor) + ' ' + 
-                    str(game.found_coin) + ' ' + 
-                    str(game.score) + ' ' + 
-                    str(game.attempt))
         if self.on_floor:
             if self.vel.x > 1.5:
                 # moving right
@@ -334,13 +323,26 @@ class Game:
         if self.score == 5:
             self.playing = False
             self.running = False
-            self.over('Won')
         if self.attempt == 0:
             self.playing = False
             self.running = False
-            self.over('Lost')
+        game.sockconn("PLAYER" +
+            str(self.player.pos.x) + ' ' + 
+            str(self.player.pos.y) + ' ' + 
+            str(self.player.vel.x) + ' ' + 
+            str(self.player.vel.y) + ' ' + 
+            str(self.player.acc.x) + ' ' + 
+            str(self.player.acc.y) + ' ' +
+            str(self.player.on_floor) + ' ' + 
+            str(self.found_coin) + ' ' + 
+            str(self.score) + ' ' + 
+            str(self.attempt))
 
     def events(self):
+        if self.score == 5:
+            self.over('Won')
+        if self.attempt == 0:
+            self.over('Lost')
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 if self.playing:
