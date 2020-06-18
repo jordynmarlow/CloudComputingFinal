@@ -352,7 +352,7 @@ class Game:
                         # send info through socket instead of sending to Viewer function
                         boxout = ''.join(text)
                         if len(text) > 0:
-                            self.sockconn("CHAT" + boxout)
+                            self.sockconn("CHATViewer: " + boxout)
                         text = ''
                         self.color = color_inactive
                         done = True
