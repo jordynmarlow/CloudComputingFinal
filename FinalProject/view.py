@@ -216,8 +216,10 @@ class Game:
             self.clock.tick(FPS)
             try:
                 input = clientSocket.recv(1024).decode('utf-8')
-                if input[0:4] == "CHAT":
-                    self.chatbox(input[4:])
+                if "CHAT" in input:
+                    procchat1 = input.split("CHAT")
+                    procchat2 = procchat1[1].split("PLAYER")
+                    self.chatbox(procchat2[0])
                 elif input[0:6] == 'PLAYER':
                     # format: 'pos.x pos.y vel.x vel.y acc.x acc.y'
                     messages = input.split('PLAYER')
