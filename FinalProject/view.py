@@ -216,19 +216,21 @@ class Game:
             self.clock.tick(FPS)
             try:
                 input = clientSocket.recv(1024).decode('utf-8')
-                #print(input)
                 if input[0:4] == "CHAT":
                     self.chatbox(input[4:])
                 elif input[0:6] == 'PLAYER':
-                    print('PLAYER')
                     # format: 'pos.x pos.y vel.x vel.y acc.x acc.y'
-                    string = input[6:].split()
-                    self.player.pos.x = int(string[0])
-                    self.player.pos.y = int(string[1])
-                    self.player.vel.x = int(string[2])
-                    self.player.vel.y = int(string[3])
-                    self.player.acc.x = int(string[4])
-                    self.player.acc.y = int(string[5])
+                    messages = input.split('PLAYER')
+                    string = messages[-2].split()
+                    #print(string)
+                    #print()
+                    self.player.pos.x = float(string[0])
+                    self.player.pos.y = float(string[1])
+                    self.player.vel.x = float(string[2])
+                    self.player.vel.y = float(string[3])
+                    self.player.acc.x = float(string[4])
+                    self.player.acc.y = float(string[5])
+                    self.player.on_floor = bool(string[6])
             except BlockingIOError:
                 pass
             self.events()
