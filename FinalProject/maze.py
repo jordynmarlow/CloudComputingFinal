@@ -22,7 +22,7 @@ PLAYER_JUMP_ANIM = 'jump.png'
 
 BOTTOM_PLATFORM = (LARGE_PLATFORM, WIDTH / 2, HEIGHT, 3072, 128)
 
-MAZE_1 = [[(MEDIUM_PLATFORM, 350, HEIGHT - 300, 1536, 128),
+PLATFORM_LIST = [[(MEDIUM_PLATFORM, 350, HEIGHT - 300, 1536, 128),
                 (SMALL_PLATFORM, 750, HEIGHT - 150, 768, 128),
                 BOTTOM_PLATFORM],
         [BOTTOM_PLATFORM],
@@ -194,7 +194,7 @@ class Game:
         #self.sprites.add(self.coin) # this will blit the coin
         self.coins.add(self.coin)
         # create Platforms
-        for platform in PLATFORM_LIST:
+        for platform in PLATFORM_LIST[self.score]:
             p = Platform(*platform, self)
             self.sprites.add(p)
             self.platforms.add(p)
