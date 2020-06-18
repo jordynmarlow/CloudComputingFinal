@@ -216,12 +216,13 @@ class Game:
             self.clock.tick(FPS)
             try:
                 input = clientSocket.recv(1024).decode('utf-8')
-                print(input)
+                #print(input)
                 if input[0:4] == "CHAT":
                     self.chatbox(input[4:])
                 elif input[0:6] == 'PLAYER':
+                    print('PLAYER')
                     # format: 'pos.x pos.y vel.x vel.y acc.x acc.y'
-                    string = input.split()
+                    string = input[6:].split()
                     self.player.pos.x = int(string[0])
                     self.player.pos.y = int(string[1])
                     self.player.vel.x = int(string[2])

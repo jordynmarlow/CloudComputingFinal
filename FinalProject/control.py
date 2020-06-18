@@ -118,7 +118,8 @@ class Player(pygame.sprite.Sprite):
             self.pos.x = self.rect.midbottom[0]
             self.pos.y = self.rect.midbottom[1]
         # format: 'pos.x pos.y vel.x vel.y acc.x acc.y'
-        game.sockconn(str(self.pos.x) + ' ' + 
+        game.sockconn("PLAYER" +
+                    str(self.pos.x) + ' ' + 
                     str(self.pos.y) + ' ' + 
                     str(self.vel.x) + ' ' + 
                     str(self.vel.y) + ' ' + 
