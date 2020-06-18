@@ -24,10 +24,47 @@ PLAYER_RUN_ANIM = 'run.png'
 PLAYER_JUMP_ANIM = 'jump.png'
 
 BOTTOM_PLATFORM = (LARGE_PLATFORM, WIDTH / 2, HEIGHT, 3072, 128)
-PLATFORM_LIST = [(MEDIUM_PLATFORM, 350, HEIGHT - 300, 1536, 128),
-                (SMALL_PLATFORM, 750, HEIGHT - 150, 768, 128),
-                BOTTOM_PLATFORM]
 
+PLATFORM_LIST = [[(MEDIUM_PLATFORM, 250, HEIGHT - 300, 1536, 128),
+                (SMALL_PLATFORM, 600, HEIGHT - 225, 768, 128),
+                BOTTOM_PLATFORM],
+
+                 [(MEDIUM_PLATFORM, 200, HEIGHT - 450, 1536, 128),
+                  (MEDIUM_PLATFORM, 75, HEIGHT - 125, 1536, 128),
+                  (SMALL_PLATFORM, 700, HEIGHT - 245, 768, 128),
+                  (SMALL_PLATFORM, 850, HEIGHT - 400, 768, 128),
+                  BOTTOM_PLATFORM],
+
+                 [(SMALL_PLATFORM, 10, HEIGHT - 180, 768, 128),
+                  (SMALL_PLATFORM, 20, HEIGHT - 425, 768, 128),
+                  (SMALL_PLATFORM, WIDTH - 10, HEIGHT - 180, 768, 128),
+                  (SMALL_PLATFORM, WIDTH - 20, HEIGHT - 425, 768, 128),
+                  (SMALL_PLATFORM, WIDTH / 2, HEIGHT - 330, 768, 128),
+                 BOTTOM_PLATFORM],
+
+                 [(SMALL_PLATFORM, 180, HEIGHT - 185, 768, 128),
+                  (SMALL_PLATFORM, WIDTH - 180, HEIGHT - 155, 768, 128),
+                  (SMALL_PLATFORM, WIDTH / 2, HEIGHT - 255, 768, 128),
+                  (MEDIUM_PLATFORM, WIDTH - 35, HEIGHT - 400, 1536, 128),
+                  (MEDIUM_PLATFORM, 35, HEIGHT - 400, 1536, 128),
+                     BOTTOM_PLATFORM],
+
+                 [(MEDIUM_PLATFORM, WIDTH / 2, HEIGHT - 150, 1536, 128),
+                  (SMALL_PLATFORM, WIDTH - 200, HEIGHT - 350, 768, 128),
+                  (SMALL_PLATFORM, 200, HEIGHT - 350, 768, 128),
+                     BOTTOM_PLATFORM]]
+
+COIN_POS_LIST = [(100, HEIGHT - 50),
+                (100, HEIGHT - 500),
+                (WIDTH - 100, HEIGHT - 475),
+                (180, HEIGHT - 235),
+                (WIDTH / 2, HEIGHT - 500)]
+
+PLAYER_POS_LIST = [(75, HEIGHT - 350),
+                    (WIDTH - 50, HEIGHT - 85),
+                    (WIDTH/2, HEIGHT - 50),
+                    (45, HEIGHT - 450),
+                    (WIDTH / 2, HEIGHT - 75)]
 
 color_inactive = pygame.Color(200, 200, 200, 0)
 #color_active = pygame.Color('dodgerblue2')
@@ -212,14 +249,14 @@ class Game:
         self.platforms = pygame.sprite.Group()
         self.coins = pygame.sprite.Group()
         # create Player
-        self.player = Player(WIDTH / 2, HEIGHT / 4, self)
+        self.player = Player(PLAYER_POS_LIST[self.score][0], PLAYER_POS_LIST[self.score][1], self)
         self.sprites.add(self.player)
         # create Coin
-        self.coin = Coin(100, HEIGHT - 50, self)
+        self.coin = Coin(COIN_POS_LIST[self.score][0], COIN_POS_LIST[self.score][1], self)
         #self.sprites.add(self.coin) # this will blit the coin
         self.coins.add(self.coin)
         # create Platforms
-        for platform in PLATFORM_LIST:
+        for platform in PLATFORM_LIST[self.score]:
             p = Platform(*platform, self)
             self.sprites.add(p)
             self.platforms.add(p)
