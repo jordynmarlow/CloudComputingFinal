@@ -1,14 +1,13 @@
 from pygame.locals import *
 import pygame
-import Viewer
+#import Viewer
 import socket
+
 
 # chat window colors
 #color_inactive = pygame.Color('lightskyblue3')
 color_inactive = pygame.Color(255, 0, 255, 0)
 color_active = pygame.Color('dodgerblue2')
-
-
 
 clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 host = "54.164.222.47"
@@ -71,7 +70,23 @@ class App:
     offset = 0
     texthistory = []
     color = color_inactive
- 
+    
+    
+    
+    
+    
+    
+    teststring = "test"
+    teststringencoded = teststring.encode('utf-8')
+    clientSocket.send(teststringencoded)
+    clientSocket.shutdown(socket.SHUT_WR)
+    print(clientSocket.recv(1024).decode('utf-8'))
+
+
+
+
+
+
     def __init__(self):
         self._running = True
         self._display_surf = None
@@ -121,6 +136,7 @@ class App:
         
         
     def chatbox(self, text):
+        print('eh?')
         self.textlog += text
         self.texthistory.append(text)
         if len(self.texthistory) > 10:
@@ -130,11 +146,6 @@ class App:
         if self.offset > 200:
             self.offset -= 20
         
-        
-    def sockconn(self, text):
-        stringencoded = text.encode('utf-8')
-        clientSocket.send(stringencoded)
-        self.chatbox("Them:" + clientSocket.recv(1024).decode('utf-8'))
         
 
     def chat(self):
@@ -155,7 +166,6 @@ class App:
                         Viewer.printChat(text)
                         boxout = ''.join(text)
                         self.chatbox('You: '+boxout)
-                        self.sockconn(boxout)
                         text = ''
                         self.color = color_inactive
                         done = True
